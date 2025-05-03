@@ -671,6 +671,46 @@ def update():
 
 ```
 
+??? Code
+    ```py
+    from random import randint
+    import pgzrun
+    WIDTH=400
+    HEIGHT=400
+
+    fox=Actor("fox 3")
+    fox.pos=100,100
+
+    coin=Actor("coin")
+    coin.pos=200,200
+
+    def draw():
+        screen.fill("green")
+        fox.draw()
+        coin.draw()
+
+    def update():
+        
+        original_x = fox.x
+        original_y = fox.y
+
+        if keyboard.left:
+            fox.x=fox.x-3
+        elif keyboard.right:
+            fox.x = fox.x + 3
+        elif keyboard.up:
+            fox.y = fox.y - 3
+        elif keyboard.down:
+            fox.y = fox.y + 3
+
+        coin_collected=fox.colliderect(coin)
+        if coin_collected:
+            fox.x = original_x
+            fox.y = original_y
+
+    pgzrun.go()
+    ```
+
 ### Collide stuff multiple
 
 ``` py
@@ -682,6 +722,51 @@ def update():
             if index != -1:
                 del actor_list2[index]
 ```
+??? Code
+    ```py
+    from random import randint
+    import pgzrun
+    WIDTH=400
+    HEIGHT=400
+
+    fox=Actor("fox 3")
+    fox.pos=100,100
+
+    COIN_NR = 10
+    coin_list = []
+    for i in range(COIN_NR):
+        coin=Actor("coin")
+        coin.x = 300#randint(20, WIDTH - 20)
+        coin.y = (i+1)*30#randint(20, HEIGHT - 20)
+        coin_list.append(coin)
+
+    def draw():
+        screen.fill("green")
+        fox.draw()
+        for coin in coin_list:
+            coin.draw()
+
+    def update():
+        
+        original_x = fox.x
+        original_y = fox.y
+
+        if keyboard.left:
+            fox.x=fox.x-3
+        elif keyboard.right:
+            fox.x = fox.x + 3
+        elif keyboard.up:
+            fox.y = fox.y - 3
+        elif keyboard.down:
+            fox.y = fox.y + 3
+        
+        index = fox.collidelist(coin_list)
+        if index != -1:
+            fox.x = original_x
+            fox.y = original_y
+
+    pgzrun.go()
+    ```
 
 ### Collect simple
 
@@ -705,7 +790,91 @@ def update():
         delete_red_coin()
 
 ```
+??? Code
+    ```py
+    from random import randint
+    import pgzrun
+    WIDTH=400
+    HEIGHT=400
 
+    fox=Actor("fox 3")
+    fox.pos=100,100
+    coin=Actor("coin")
+    coin.pos=200,200
+
+    def place_coin():
+        coin.x=randint(20,(WIDTH - 20))
+        coin.y=randint(20,(HEIGHT- 20))
+
+    def update():
+
+        if keyboard.left:
+            fox.x=fox.x-3
+        elif keyboard.right:
+            fox.x = fox.x + 3
+        elif keyboard.up:
+            fox.y = fox.y - 3
+        elif keyboard.down:
+            fox.y = fox.y + 3
+
+        coin_collected=fox.colliderect(coin)
+        if coin_collected:
+            place_coin()
+
+        
+    def draw():
+        screen.fill("green")
+        fox.draw()
+        coin.draw()
+
+    pgzrun.go()
+    ```
+
+### Colect multiple
+??? Code
+    ```py
+    from random import randint
+    import pgzrun
+    WIDTH=400
+    HEIGHT=400
+
+    fox=Actor("fox 3")
+    fox.pos=100,100
+
+    COIN_NR = 10
+    coin_list = []
+    for i in range(COIN_NR):
+        coin=Actor("coin")
+        coin.x = 300#randint(20, WIDTH - 20)
+        coin.y = (i+1)*30#randint(20, HEIGHT - 20)
+        coin_list.append(coin)
+
+    def draw():
+        screen.fill("green")
+        fox.draw()
+        for coin in coin_list:
+            coin.draw()
+
+    def update():
+        
+        original_x = fox.x
+        original_y = fox.y
+
+        if keyboard.left:
+            fox.x=fox.x-3
+        elif keyboard.right:
+            fox.x = fox.x + 3
+        elif keyboard.up:
+            fox.y = fox.y - 3
+        elif keyboard.down:
+            fox.y = fox.y + 3
+        
+        index = fox.collidelist(coin_list)
+        if index != -1:
+            del coin_list[index]
+
+    pgzrun.go()
+    ```
 
 ## Shooting
 ### Shooting1
@@ -749,7 +918,101 @@ def update():
             bullet.y = bullet.y + 5
 
     for bullet in bullets:
+        ## bullets out of bounds            
+        if bullet.x < 0 or bullet.x > 800 or bullet.y < 0 or bullet.y > 600:
+            bullets.remove(bullet)
 
+```
+??? Code
+    ```py
+    import pgzrun
+    import random
+
+    WIDTH=800
+    HEIGHT=600
+
+    tank = Actor('tank_blue')
+    tank.y = 575
+    tank.x = 400
+    tank.angle = 90
+
+    background = Actor('grass')
+
+    bullets = []
+    bullet_holdoff = 0
+
+    def update():
+        global bullet_holdoff
+
+        original_x = tank.x
+        original_y = tank.y
+
+        if keyboard.left:
+            tank.x = tank.x - 2
+            tank.angle = 180
+        elif keyboard.right:
+            tank.x = tank.x + 2
+            tank.angle = 0
+        elif keyboard.up:
+            tank.y = tank.y - 2
+            tank.angle = 90
+        elif keyboard.down:
+            tank.y = tank.y + 2
+            tank.angle = 270
+
+        if bullet_holdoff == 0:
+            if keyboard.space:
+                bullet = Actor('bulletblue2')
+                bullet.angle = tank.angle
+                bullet.x = tank.x
+                bullet.y = tank.y
+                bullets.append(bullet)
+                sounds.sfx_wpn_cannon2.play()
+                bullet_holdoff =50
+        else:
+            bullet_holdoff = bullet_holdoff - 1
+
+        for bullet in bullets:
+            if bullet.angle == 0:
+                bullet.x = bullet.x + 5
+            elif bullet.angle == 90:
+                bullet.y = bullet.y - 5
+            elif bullet.angle == 180:
+                bullet.x = bullet.x - 5
+            elif bullet.angle == 270:
+                bullet.y = bullet.y + 5
+
+        for bullet in bullets:
+            if bullet.x < 0 or bullet.x > 800 or bullet.y < 0 or bullet.y > 600:
+                bullets.remove(bullet)
+
+
+    def draw():
+        background.draw()
+        tank.draw()
+
+        for bullet in bullets:
+            bullet.draw()
+
+
+    pgzrun.go() 
+    ```
+
+### Shooting1 Collisions
+
+```py
+....
+
+bullets = []
+def draw():
+
+    for bullet in bullets:
+        bullet.draw()
+
+def update():
+    .....
+
+    for bullet in bullets:
         ## bullet collison with walls
         wall_index = bullet.collidelist(walls)
         if wall_index != -1:
@@ -762,28 +1025,232 @@ def update():
             del enemies[enemy_index]
             sounds.sfx_exp_medium2.play()
             bullets.remove(bullet)
+    ....
+```
 
-        ## bullets out of bounds            
-        if bullet.x < 0 or bullet.x > 800 or bullet.y < 0 or bullet.y > 600:
+??? Code
+    ```py
+    import pgzrun
+    import random
+
+    WIDTH=800
+    HEIGHT=600
+
+    tank = Actor('tank_blue')
+    tank.y = 575
+    tank.x = 400
+    tank.angle = 90
+
+    background = Actor('grass')
+
+    walls = []
+    for x in range(16):
+        for y in range(10):
+            if random.randint(0, 100) < 50:
+                wall = Actor('wall')
+                wall.x = x * 50 + 25
+                wall.y = y * 50 + 25 + 50
+                walls.append(wall)
+
+    bullets = []
+    bullet_holdoff = 0
+
+    def update():
+        global bullet_holdoff
+        global game_over
+
+        original_x = tank.x
+        original_y = tank.y
+
+        if keyboard.left:
+            tank.x = tank.x - 2
+            tank.angle = 180
+        elif keyboard.right:
+            tank.x = tank.x + 2
+            tank.angle = 0
+        elif keyboard.up:
+            tank.y = tank.y - 2
+            tank.angle = 90
+        elif keyboard.down:
+            tank.y = tank.y + 2
+            tank.angle = 270
+
+        if tank.collidelist(walls) != -1:
+            tank.x = original_x
+            tank.y = original_y
+
+        if tank.x < 0 or tank.x > 800 or tank.y < 0 or tank.y > 600:
+            tank.x = original_x
+            tank.y = original_y
+
+        if bullet_holdoff == 0:
+            if keyboard.space:
+                bullet = Actor('bulletblue2')
+                bullet.angle = tank.angle
+                bullet.x = tank.x
+                bullet.y = tank.y
+                bullets.append(bullet)
+                sounds.sfx_wpn_cannon2.play()
+                bullet_holdoff =50
+        else:
+            bullet_holdoff = bullet_holdoff - 1
+
+        for bullet in bullets:
+            if bullet.angle == 0:
+                bullet.x = bullet.x + 5
+            elif bullet.angle == 90:
+                bullet.y = bullet.y - 5
+            elif bullet.angle == 180:
+                bullet.x = bullet.x - 5
+            elif bullet.angle == 270:
+                bullet.y = bullet.y + 5
+
+        for bullet in bullets:
+            wall_index = bullet.collidelist(walls)
+            if wall_index != -1:
+                del walls[wall_index]
+                bullets.remove(bullet)
+
+            # enemy collision
+            # enemy_index = bullet.collidelist(enemies)
+            # if enemy_index != -1:
+            #     del enemies[enemy_index]
+            #     sounds.sfx_exp_medium2.play()
+            #     bullets.remove(bullet)
+            
+            if bullet.x < 0 or bullet.x > 800 or bullet.y < 0 or bullet.y > 600:
+                bullets.remove(bullet)
+        
+
+    def draw():
+
+        background.draw()
+        tank.draw()
+        for bullet in bullets:
+            bullet.draw()
+        for wall in walls:
+            wall.draw()
+
+    pgzrun.go() 
+    ```
+
+### Shooting2
+```py
+from pgzhelper import *
+...
+...
+def shoot():
+        global bullet_delay
+
+        sounds.sfx_laser2.play()
+        bullet_delay = 15
+        bullet = Actor('player_bullet')
+        bullet.x = player.x
+        bullet.y = player.y
+        # setting the bullet angle
+        bullet.angle = 90
+        bullets.append(bullet)
+
+def update():
+    # instead of checking the bullet angle and calculate its directions
+    # you can directly specify to move forward from the current angle
+    # you just need to set the bullet angle correctly
+    ...
+    for bullet in bullets:
+        bullet.move_forward(15)
+        if bullet.y < 0:
             bullets.remove(bullet)
 
 ```
+??? Code
+    ```py
+    import pgzrun
+    import random
+    from pgzhelper import *
 
-### Shooting2
+    WIDTH=800
+    HEIGHT=600
+
+    player = Actor('player')
+    player.x = 400
+    player.y = 500
+
+    bullets = []
+    bullet_delay = 0
+
+
+    def shoot():
+        global bullet_delay
+
+        sounds.sfx_laser2.play()
+        bullet_delay = 15
+        bullet = Actor('player_bullet')
+        bullet.x = player.x
+        bullet.y = player.y
+        bullet.angle = 90
+        bullets.append(bullet)
+
+
+
+    def update():
+        global bullet_delay
+        if keyboard.up:
+            player.y -= 5
+        if keyboard.down:
+            player.y += 5
+        if keyboard.right:
+            player.x += 5
+        if keyboard.left:
+            player.x -= 5
+
+        if player.x < 25:
+            player.x = 25
+        if player.x > 775:
+            player.x = 775
+        if player.y < 30:
+            player.y = 30
+        if player.y > 570:
+            player.y = 570 
+
+        if keyboard.space and bullet_delay == 0:
+            shoot()
+        if bullet_delay > 0:
+            bullet_delay -= 1
+        for bullet in bullets:
+            # the difference comes in the move_forward function
+            # the bullets have an angle and they move in the direction of the angle
+            bullet.move_forward(15)
+            if bullet.y < 0:
+                bullets.remove(bullet)
+
+
+                
+    def draw():
+        screen.clear()
+        screen.fill("skyblue")
+        player.draw()
+        for bullet in bullets:
+            bullet.draw()
+        
+        
+
+    pgzrun.go() 
+    ```
+
 
 ## Enemy
 ### Enemies moving
 ``` py
 enemies = []
+
+## enemy placement
 for i in range(3):
     enemy = Actor('tank_red')
     enemy.y = 25
     enemy.x = i * 200 + 100
     enemy.angle = 270
-
     ## how many steps to take
     enemy.move_count = 0
-    
     enemies.append(enemy)
 
 def update():
@@ -805,6 +1272,7 @@ def update():
             elif enemy.angle == 270:
                 enemy.y = enemy.y + 2
 
+            ## enemy collision walls (player already collides with enemies)
             if enemy.collidelist(walls) != -1:
                 enemy.x = original_x
                 enemy.y = original_y
@@ -831,12 +1299,92 @@ def update():
                 enemy_bullets.append(bullet)
 
 ```
+??? Code
+    ```py
+    import pgzrun
+    import random
+
+    WIDTH=800
+    HEIGHT=600
+
+    enemies = []
+    enemy_bullets=[]
+
+    ## enemy placement
+    for i in range(3):
+        enemy = Actor('tank_red')
+        enemy.y = 25
+        enemy.x = i * 200 + 100
+        enemy.angle = 270
+        enemy.move_count = 0
+        enemies.append(enemy)
+
+    background = Actor('grass')
+
+    ## wall placement
+    walls = []
+    for x in range(16):
+        for y in range(10):
+            if random.randint(0, 100) < 50:
+                wall = Actor('wall')
+                wall.x = x * 50 + 25
+                wall.y = y * 50 + 25 + 50
+                walls.append(wall)
+
+    def update():        
+        for enemy in enemies:
+            choice = random.randint(0, 2)
+            if enemy.move_count > 0:
+                enemy.move_count = enemy.move_count - 1
+
+                original_x = enemy.x
+                original_y = enemy.y
+                if enemy.angle == 0:
+                    enemy.x = enemy.x + 2
+                elif enemy.angle == 90:
+                    enemy.y = enemy.y - 2
+                elif enemy.angle == 180:
+                    enemy.x = enemy.x - 2
+                elif enemy.angle == 270:
+                    enemy.y = enemy.y + 2
+
+                if enemy.collidelist(walls) != -1:
+                    enemy.x = original_x
+                    enemy.y = original_y
+                    enemy.moveCount = 0
+
+                if enemy.x < 0 or enemy.x > 800 or enemy.y < 0 or enemy.y > 600:
+                    enemy.x = original_x
+                    enemy.y = original_y
+                    enemy.move_count = 0
+
+            elif choice == 0:
+                enemy.move_count = 20
+            elif choice == 1:
+                enemy.angle = random.randint(0, 3) * 90
+            else:
+                bullet = Actor('bulletred2')
+                bullet.angle = enemy.angle
+                bullet.x = enemy.x
+                bullet.y = enemy.y
+                enemy_bullets.append(bullet)
+
+    def draw():
+        background.draw()
+        for enemy in enemies:
+            enemy.draw()
+
+        for wall in walls:
+            wall.draw()
+
+    pgzrun.go() 
+    ```
 ### Enemies shooting
 
 ``` py
     def update():
     ....
-    ## make the bullets move
+    ## make the existing bullets from list move
     for bullet in enemy_bullets:
         if bullet.angle == 0:
             bullet.x = bullet.x + 5
@@ -860,41 +1408,315 @@ def update():
         if bullet.x < 0 or bullet.x > 800 or bullet.y < 0 or bullet.y > 600:
             enemy_bullets.remove(bullet)
 ```
+??? Code
+    ```py
+    import pgzrun
+    import random
+
+    WIDTH=800
+    HEIGHT=600
+
+
+
+    enemies = []
+    enemy_bullets=[]
+
+
+    ## enemy placement
+    for i in range(3):
+        enemy = Actor('tank_red')
+        enemy.y = 25
+        enemy.x = i * 200 + 100
+        enemy.angle = 270
+        enemy.move_count = 0
+        enemies.append(enemy)
+
+    background = Actor('grass')
+
+    ## wall placement
+    walls = []
+    for x in range(16):
+        for y in range(10):
+            if random.randint(0, 100) < 50:
+                wall = Actor('wall')
+                wall.x = x * 50 + 25
+                wall.y = y * 50 + 25 + 50
+                walls.append(wall)
+
+
+    def update():
+        
+        for enemy in enemies:
+            choice = random.randint(0, 2)
+            if enemy.move_count > 0:
+                enemy.move_count = enemy.move_count - 1
+
+                original_x = enemy.x
+                original_y = enemy.y
+                if enemy.angle == 0:
+                    enemy.x = enemy.x + 2
+                elif enemy.angle == 90:
+                    enemy.y = enemy.y - 2
+                elif enemy.angle == 180:
+                    enemy.x = enemy.x - 2
+                elif enemy.angle == 270:
+                    enemy.y = enemy.y + 2
+
+                if enemy.collidelist(walls) != -1:
+                    enemy.x = original_x
+                    enemy.y = original_y
+                    enemy.moveCount = 0
+
+                if enemy.x < 0 or enemy.x > 800 or enemy.y < 0 or enemy.y > 600:
+                    enemy.x = original_x
+                    enemy.y = original_y
+                    enemy.move_count = 0
+
+            elif choice == 0:
+                enemy.move_count = 20
+            elif choice == 1:
+                enemy.angle = random.randint(0, 3) * 90
+            else:
+                bullet = Actor('bulletred2')
+                bullet.angle = enemy.angle
+                bullet.x = enemy.x
+                bullet.y = enemy.y
+                enemy_bullets.append(bullet)
+
+        ## check the existing enemy bullets from list and shoot them
+        for bullet in enemy_bullets:
+            if bullet.angle == 0:
+                bullet.x = bullet.x + 5
+            elif bullet.angle == 90:
+                bullet.y = bullet.y - 5
+            elif bullet.angle == 180:
+                bullet.x = bullet.x - 5
+            elif bullet.angle == 270:
+                bullet.y = bullet.y + 5
+
+        for bullet in enemy_bullets:
+            wall_index = bullet.collidelist(walls)
+            if wall_index != -1:
+                del walls[wall_index]
+                enemy_bullets.remove(bullet)
+            if bullet.x < 0 or bullet.x > 800 or bullet.y < 0 or bullet.y > 600:
+                enemy_bullets.remove(bullet)
+            ## player enemy_bullet collision
+            #if bullet.colliderect(tank):
+            #    game_over = True
+
+
+    def draw():
+        background.draw()
+        for wall in walls:
+            wall.draw()
+        for enemy in enemies:
+            enemy.draw()
+        for bullet in enemy_bullets:
+            bullet.draw()
+
+    pgzrun.go() 
+    ```
 
 ### Enemies moving 2
 
 ``` py
+from pgzhelper import *
+ENEMY_SPEED = 4
+
 def update():
 
+    ## generate random enemies
     if random.randint(0, 1000) > 980:
         enemy = Actor('enemy')
-        enemy.images = ['enemy']
         enemy.fps = 5
         enemy.y = -50
         enemy.x = random.randint(100, 700)
         enemy.direction = random.randint(-100, -80)
         enemies.append(enemy)
 
+    ## make the enemies move
     for enemy in enemies:
-        enemy.move_in_direction(4)
-        enemy.animate()
+        ## !!! 3 types of movement !!! ##
+        enemy.move_in_direction(ENEMY_SPEED)
+        #enemy.move_towardsXY(player.x+10,player.y+10, ENEMY_SPEED)
+        #enemy.move_towards(player, ENEMY_SPEED)
         if enemy.y > 700:
             enemies.remove(enemy)
+
+
+```
+??? Code
+    ```py
+    import pgzrun
+    import random
+    from pgzhelper import *
+
+    WIDTH=800
+    HEIGHT=600
+
+    player = Actor('player')
+    player.x = 400
+    player.y = 500
+
+    bullets = []
+    bullet_delay = 0
+
+    ENEMY_SPEED = 4
+    enemies = []
+
+    def update():
+
+        ## generate random enemies
+        if random.randint(0, 1000) > 980:
+            enemy = Actor('enemy')
+            enemy.fps = 5
+            enemy.y = -50
+            enemy.x = random.randint(100, 700)
+            enemy.direction = random.randint(-100, -80)
+            enemies.append(enemy)
+
+        for enemy in enemies:
+
+            ## !!! 3 types of movement !!! ##
+            enemy.move_in_direction(ENEMY_SPEED)
+            #enemy.move_towardsXY(player.x+10,player.y+10, ENEMY_SPEED)
+            #enemy.move_towards(player, ENEMY_SPEED)
+
+            ##################################
+            if enemy.y > 700:
+                enemies.remove(enemy)
+
+    def draw():
+        screen.clear()
+        screen.fill("skyblue")
+        for enemy in enemies:
+            enemy.draw()
+
+    pgzrun.go() 
+    ```
+### Enemies Shooting 2
+```py
+enemy_bullets=[]
+def update():
+    ....
+    for enemy in enemies:
+        ....
+        ....
+        ## generate bullets at random times
         if random.randint(0, 1000) > 990:
             bullet = Actor('enemy_bullet')
             bullet.x = enemy.x
             bullet.y = enemy.y
+            ## random bullet direction
             bullet.angle = random.randint(0, 359)
-            enemy_bullets.append(bullet)
+            enemy_bullets.append(bullet)  
+    
+    ## bullet movement 
+    for bullet in enemy_bullets:
+            bullet.move_forward(5)
+            # bullet.move_towardsXY(player.x+10,player.y+10,1)
+            if bullet.x < 0 or bullet.x > 800 or bullet.y < 0 or bullet.y > 600:
+                enemy_bullets.remove(bullet)   
+        
+    ## check player collision with bullets or enemies
+    if player.collidelist(enemies) or player.collidelist(enemy_bullets) != -1 or player.collidelist(enemies) != -1:
+        ## do sth
+        pass
 
+def draw():
+    ....
+    for enemy_bullet in enemy_bullets:
+        enemy_bullet.draw()
 
 ```
+??? Code
+    ```py
+    import pgzrun
+    import random
+    from pgzhelper import *
+
+    WIDTH=800
+    HEIGHT=600
+
+    player = Actor('player')
+    player.x = 400
+    player.y = 500
+
+    bullets = []
+    bullet_delay = 0
+
+    ENEMY_SPEED = 4
+    enemies = []
+    enemy_bullets=[]
+
+    def update():
+
+        ## generate random enemies
+        if random.randint(0, 1000) > 980:
+            enemy = Actor('enemy')
+            enemy.fps = 5
+            enemy.y = -50
+            enemy.x = random.randint(100, 700)
+            enemy.direction = random.randint(-100, -80)
+            enemies.append(enemy)
+
+        for enemy in enemies:
+
+            ## !!! 3 types of movement !!! ##
+            enemy.move_in_direction(ENEMY_SPEED)
+            #enemy.move_towardsXY(player.x+10,player.y+10, ENEMY_SPEED)
+            #enemy.move_towards(player, ENEMY_SPEED)
+
+            ##################################
+            if enemy.y > 700:
+                enemies.remove(enemy)
+            if random.randint(0, 1000) > 990:
+                bullet = Actor('enemy_bullet')
+                bullet.x = enemy.x
+                bullet.y = enemy.y
+                ## random bullet direction
+                bullet.angle = random.randint(0, 359)
+                enemy_bullets.append(bullet)         
+            
+        for bullet in enemy_bullets:
+            bullet.move_forward(5)
+            # bullet.move_towardsXY(player.x+10,player.y+10,1)
+            if bullet.x < 0 or bullet.x > 800 or bullet.y < 0 or bullet.y > 600:
+                enemy_bullets.remove(bullet)   
+        
+        ## check player collision with bullets or enemies
+        if player.collidelist(enemies) or player.collidelist(enemy_bullets) != -1 or player.collidelist(enemies) != -1:
+            ## do sth
+            pass
+
+
+    def draw():
+        screen.clear()
+        screen.fill("skyblue")
+        for enemy in enemies:
+            enemy.draw()
+        for enemy_bullet in enemy_bullets:
+            enemy_bullet.draw()
+
+        
+    pgzrun.go() 
+    ```py
+
+
 ### Explosion
 
 ## Companion
 ### Companion Movement
 ### Companion Shooting
 
+## Platfomer
+### Platformer tiles jumping
+```py
+```
+??? Code
+    ```py
+    ```py
 
 ## Events
 ### Mouse click
@@ -909,7 +1731,6 @@ def on_mouse_down(pos):
         quit()
 
 ```
-
 
 ### Interrupts
 
@@ -949,9 +1770,7 @@ clock.schedule(time_up,40.0)
 
 
 ```
-
-
-
+### Powerups
 
 ## Sounds and Music
 
