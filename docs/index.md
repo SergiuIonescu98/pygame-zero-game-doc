@@ -1701,7 +1701,7 @@ def draw():
 
         
     pgzrun.go() 
-    ```py
+    ```
 
 
 ### Explosion
